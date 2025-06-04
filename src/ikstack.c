@@ -7,20 +7,18 @@
 #include "common.h"
 #include "iksemel.h"
 
-typedef double align_type ;
-struct align_test { char a; align_type b; };
+struct align_test { char a; double b; };
 #define DEFAULT_ALIGNMENT  ((size_t) ((char *) &((struct align_test *) 0)->b - (char *) 0))
 #define ALIGN_MASK ( DEFAULT_ALIGNMENT - 1 )
 #define MIN_CHUNK_SIZE ( DEFAULT_ALIGNMENT * 8 )
 #define MIN_ALLOC_SIZE DEFAULT_ALIGNMENT
-#define ALIGN(x) ( ((x) + DEFAULT_ALIGNMENT - 1) & ~ALIGN_MASK )
+#define ALIGN(x) ( (x) + (DEFAULT_ALIGNMENT - ( (x) & ALIGN_MASK)) )
 
 typedef struct ikschunk_struct {
 	struct ikschunk_struct *next;
 	size_t size;
 	size_t used;
 	size_t last;
-	align_type align[0] ;	// Align data, and ensure struct size matches alignment
 	char data[4];
 } ikschunk;
 
@@ -28,7 +26,6 @@ struct ikstack_struct {
 	size_t allocated;
 	ikschunk *meta;
 	ikschunk *data;
-	align_type align[0] ;	// Ensure struct size matches alignment
 };
 
 static ikschunk *
